@@ -1,117 +1,91 @@
- 
-
-
-const images = Array.from(document.querySelectorAll("img"));
-// const resetButton = document.getElementById("reset");
-// const verifyButton = document.getElementById("verify");
-const messagePara = document.getElementById("para");
-const heading = document.getElementById("h");
-
-
-
-
-// Get a reference to the images container
-const imagesContainer = document.querySelector(".images");
-
-// Create a new image element and set its attributes
-const newImage = document.createElement("img");
-newImage.classList.add("tile", "img6");
-
-// Randomly select an image from the existing array
-const randomIndex = Math.floor(Math.random() * images.length);
-const randomImage = images[randomIndex];
-
-// Set the new image's source to the randomly selected image's source
-newImage.src = randomImage.src;
-
-// Add the new image to the container and the array
-imagesContainer.appendChild(newImage);
-images.push(newImage);
-
-
-
-
-// Get a reference to the reset button and verify button
-const resetButton = document.querySelector("#reset");
-const verifyButton = document.querySelector("#verify");
-
-// Get a reference to the message paragraph
-const message = document.querySelector("#para");
-
-// Initialize variables to keep track of clicked tiles
-let firstClickedTile = null;
-let secondClickedTile = null;
-
-// Add event listeners to each image
-images.forEach(image => {
-image.addEventListener("click", event => {
-// If both tiles have been clicked, return early
-if (firstClickedTile !== null && secondClickedTile !== null) {
-return;
+//your code here
+let image = [];
+for (let i = 0; i < 5; i++) {
+  let t = document.createElement("IMG");
+  t.setAttribute("data-ns-test", `img${i + 1}`);
+  t.width = 100;
+  t.height = 100;
+  t.onclick = (e) => captchaClick(e);
+  t.src = `images/${i + 1}.jpg`;
+  image.push(t);
+}
+let temp = Math.floor(Math.random() * 5);
+let t = document.createElement("IMG");
+t.setAttribute("data-ns-test", `img${temp + 1}`);
+t.width = 100;
+t.height = 100;
+t.onclick = (e) => captchaClick(e);
+t.src = `images/${temp + 1}.jpg`;
+image.push(t);
+image.sort(() => Math.random() - 0.5);
+for (let i = 0; i < 6; i++) {
+  document.getElementById("main").appendChild(image[i]);
 }
 
- 
-// Get a reference to the clicked tile
-const clickedTile = event.target;
-
-// If the clicked tile is already selected, return early
-if (clickedTile.classList.contains("selected")) {
-  return;
+let captcha = [];
+function clearCaptcha() {
+  // console.log("Clearing captcha");
+  for (let i = 0; i < 6; i++) {
+    image[i].onclick = (e) => captchaClick(e);
+  }
+  captcha = [];
+  try {
+    document.getElementById("para").remove();
+  } catch (e) {}
+  try {
+    document.getElementById("btn").remove();
+  } catch (e) {}
+  try {
+    document.getElementById("reset").remove();
+  } catch (e) {}
 }
 
-// If no tiles have been clicked yet, set this tile as the first clicked tile
-if (firstClickedTile === null) {
-  firstClickedTile = clickedTile;
-  firstClickedTile.classList.add("selected");
-  
-  // Show the reset button
-  resetButton.style.display = "inline-block";
-} 
-// If one tile has been clicked, set this tile as the second clicked tile
-else {
-  secondClickedTile = clickedTile;
-  secondClickedTile.classList.add("selected");
-  
-  // Show the verify button
-  verifyButton.style.display = "inline-block";
-}
-});
-});
+function captchaClick(e) {
+  console.log(e.target.attributes["data-ns-test"].nodeValue);
+  captcha.push(e.target.attributes["data-ns-test"].nodeValue);
+  e.target.onclick = () => {};
+  // console.log(captcha);
 
-// Add event listener to reset button
-resetButton.addEventListener("click", () => {
-// Clear clicked tiles and remove selected class from all tiles
-firstClickedTile = null;
-secondClickedTile = null;
-images.forEach(image => image.classList.remove("selected"));
+  if (captcha.length === 1) {
+    let p = document.createElement("button");
+    p.id = "reset";
+    p.innerHTML = "Reset";
+    p.onclick = () => {
+      clearCaptcha();
+    };
+    document.getElementById("main").appendChild(p);
+  }
 
-// Hide the reset button and verify button
-resetButton.style.display = "none";
-verifyButton.style.display = "none";
-
-// Clear the message
-message.textContent = "";
-});
-
-// Add event listener to verify button
-verifyButton.addEventListener("click", () => {
-// If both tiles are identical, show success message
-if (firstClickedTile.src === secondClickedTile.src) {
-message.textContent = "You are a human. Congratulations!";
-}
-// If tiles are not identical, show error message
-else {
-message.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
+  if (captcha.length === 2) {
+    let t = document.createElement("button");
+    t.id = "btn";
+    t.innerHTML = "Verify";
+    t.onclick = () => {
+      captchaVerify();
+    };
+    document.getElementById("main").appendChild(t);
+  } else if (captcha.length > 2) {
+    try {
+      document.getElementById("btn").remove();
+    } catch (e) {}
+  }
+  try {
+    document.getElementById("para").remove();
+  } catch (e) {}
 }
 
-// Remove selected class from all tiles
-images.forEach(image => image.classList.remove("selected"));
-
-// Hide the reset button and verify button
-resetButton.style.display = "none";
-verifyButton.style.display = "none";
-
-// Clear clicked tiles
-firstClickedTile = null;
-secondClickedTile = null;
-});
+function captchaVerify() {
+  if (captcha.length === 2 && captcha[0] === captcha[1]) {
+    let t = document.createElement("P");
+    t.innerHTML = "You are a human. Congratulations!";
+    t.id = "para";
+    document.getElementById("main").appendChild(t);
+  } else {
+    let t = document.createElement("P");
+    t.innerHTML =
+      "We can't verify you as a human. You selected the non-identical tiles.";
+    t.id = "para";
+    document.getElementById("main").appendChild(t);
+  }
+  document.getElementById("btn").remove();
+}
